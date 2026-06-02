@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDoS Defender Simulator</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#0f172a;
+    color:white;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-top:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.value{
+    font-size:28px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.controls{
+    text-align:center;
+    margin:20px 0;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin:5px;
+    font-size:16px;
+}
+
+.start{
+    background:#22c55e;
+    color:white;
+}
+
+.attack{
+    background:#ef4444;
+    color:white;
+}
+
+.logs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:20px;
+}
+
+.log-box{
+    background:#1e293b;
+    padding:15px;
+    border-radius:10px;
+    height:300px;
+    overflow-y:auto;
+}
+
+.allowed{
+    color:#22c55e;
+}
+
+.blocked{
+    color:#ef4444;
+}
+
+.status{
+    text-align:center;
+    margin-top:20px;
+    font-size:20px;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🛡️ DDoS Defender Simulator</h1>
+
+<div class="status" id="status">
+Status: NORMAL
+</div>
+
+<div class="dashboard">
+
+<div class="card">
+<h3>Total Requests</h3>
+<div class="value" id="total">0</div>
+</div>
+
+<div class="card">
+<h3>Allowed Requests</h3>
+<div class="value" id="allowed">0</div>
+</div>
+
+<div class="card">
+<h3>Blocked Requests</h3>
+<div class="value" id="blocked">0</div>
+</div>
+
+</div>
+
+<div class="controls">
+<button class="start" onclick="startSimulation()">Start Simulation</button>
+<button class="attack" onclick="toggleAttack()">Toggle DDoS Attack</button>
+</div>
+
+<div class="logs">
+
+<div class="log-box">
+<h3>Allowed Traffic</h3>
+<div id="allowedLog"></div>
+</div>
+
+<div class="log-box">
+<h3>Blocked Traffic</h3>
+<div id="blockedLog"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let total = 0;
+let allowed = 0;
+let blocked = 0;
+
+let attackMode = false;
+let simulationRunning = false;
+
+const requestCount = {};
+
+function randomIP(){
+    return `192.168.1.${Math.floor(Math.random()*10)+1}`;
+}
+
+function updateDashboard(){
+    document.getElementById("total").innerText = total;
+    document.getElementById("allowed").innerText = allowed;
+    document.getElementById("blocked").innerText = blocked;
+}
+
+function processRequest(ip){
+
+    total++;
+
+    if(!requestCount[ip]){
+        requestCount[ip] = 0;
+    }
+
+    requestCount[ip]++;
+
+    if(requestCount[ip] > 5){
+
+        blocked++;
+
+        document.getElementById("blockedLog").innerHTML +=
+        `<div class="blocked">[BLOCKED] ${ip}</div>`;
+
+    }else{
+
+        allowed++;
+
+        document.getElementById("allowedLog").innerHTML +=
+        `<div class="allowed">[ALLOWED] ${ip}</div>`;
+    }
+
+    updateDashboard();
+}
+
+function startSimulation(){
+
+    if(simulationRunning) return;
+
+    simulationRunning = true;
+
+    setInterval(()=>{
+
+        processRequest(randomIP());
+
+        if(attackMode){
+
+            for(let i=0;i<5;i++){
+                processRequest("10.0.0.1");
+            }
+
+        }
+
+    },1000);
+}
+
+function toggleAttack(){
+
+    attackMode = !attackMode;
+
+    if(attackMode){
+        document.getElementById("status").innerText =
+        "🚨 Status: UNDER ATTACK";
+    }else{
+        document.getElementById("status").innerText =
+        "✅ Status: NORMAL";
+    }
+}
+
+</script>
+
+</body>
+</html>
